@@ -82,12 +82,12 @@ double get_peak_rss_mb() {
 // Synthetic Log Generation (if test file does not exist)
 // ============================================================================
 void generate_test_log(const std::string& path, size_t size_bytes, uint64_t seed = 42) {
-    std::cout << "[Benchmark Setup] Sentetik log dosyasi uretiliyor: " << path
+    std::cout << "[Benchmark Setup] Generating synthetic log file: " << path
               << " (" << (size_bytes / (1024 * 1024)) << " MB)...\n";
 
     FILE* out = std::fopen(path.c_str(), "wb");
     if (!out) {
-        throw std::runtime_error("Test log dosyasi olusturulamadi: " + path);
+        throw std::runtime_error("Failed to create benchmark log file: " + path);
     }
 
     logscan::FastWriter writer(out, 1024 * 1024);
@@ -150,7 +150,7 @@ void generate_test_log(const std::string& path, size_t size_bytes, uint64_t seed
 
     writer.flush();
     std::fclose(out);
-    std::cout << "[Benchmark Setup] Sentetik dosya hazirlandi ("
+    std::cout << "[Benchmark Setup] Synthetic dataset prepared ("
               << (written / (1024 * 1024)) << " MB).\n\n";
 }
 
@@ -173,7 +173,7 @@ struct NaiveResult {
 NaiveResult run_naive_scenario(const std::string& path, ScenarioType scenario) {
     std::ifstream file(path);
     if (!file.is_open()) {
-        throw std::runtime_error("Naive okuma dosyasi acilamadi: " + path);
+        throw std::runtime_error("Failed to open file for naive reader: " + path);
     }
 
     NaiveResult result;
@@ -257,12 +257,12 @@ std::vector<BenchRecord> run_all_benchmarks(const BenchConfig& cfg) {
     const double file_size_mb = static_cast<double>(file_bytes) / (1024.0 * 1024.0);
 
     std::cout << "================================================================\n"
-              << "              LOGSCAN PERFORMANS BENCHMARK TESTI                \n"
+              << "              LOGSCAN PERFORMANCE BENCHMARK SUITE               \n"
               << "================================================================\n"
-              << " Hedef Dosya : " << cfg.log_file << " (" << std::fixed << std::setprecision(2)
+              << " Target File : " << cfg.log_file << " (" << std::fixed << std::setprecision(2)
               << file_size_mb << " MB)\n"
-              << " Tekrar      : " << cfg.repetitions << " (Medyan alinacak)\n"
-              << " CSV Ciktisi : " << cfg.csv_output << "\n"
+              << " Iterations  : " << cfg.repetitions << " (median will be computed)\n"
+              << " CSV Output  : " << cfg.csv_output << "\n"
               << "================================================================\n\n";
 
     struct ScenarioDef {
@@ -272,17 +272,17 @@ std::vector<BenchRecord> run_all_benchmarks(const BenchConfig& cfg) {
     };
 
     const std::vector<ScenarioDef> scenarios = {
-        {ScenarioType::ErrorFilter, "ERROR Seviyesi Filtreleme", "LevelFilter(Level::ERROR)"},
-        {ScenarioType::SubstringSearch, "Alt Dize Arama ('timeout')", "SubstringFilter('timeout')"},
-        {ScenarioType::RegexSearch, "Regex Arama ('user_[0-9]+ failed')", "RegexFilter('user_[0-9]+ failed')"},
-        {ScenarioType::StatsMode, "Istatistik ve Top Mesaj Modu", "track_messages=true, stats only"}
+        {ScenarioType::ErrorFilter, "ERROR Level Filtering", "LevelFilter(Level::ERROR)"},
+        {ScenarioType::SubstringSearch, "Substring Search ('timeout')", "SubstringFilter('timeout')"},
+        {ScenarioType::RegexSearch, "Regex Search ('user_[0-9]+ failed')", "RegexFilter('user_[0-9]+ failed')"},
+        {ScenarioType::StatsMode, "Statistics & Message Frequency Mode", "track_messages=true, stats only"}
     };
 
     const std::vector<size_t> thread_configs = {1, 2, 4, 8};
     std::vector<BenchRecord> all_records;
 
     for (const auto& sc : scenarios) {
-        std::cout << ">>> Calistiriliyor: " << sc.name << " (" << sc.description << ")...\n";
+        std::cout << ">>> Running: " << sc.name << " (" << sc.description << ")...\n";
 
         // 1. Run Naive Reference (1 thread)
         std::vector<double> naive_times;
@@ -314,8 +314,8 @@ std::vector<BenchRecord> run_all_benchmarks(const BenchConfig& cfg) {
         };
         all_records.push_back(naive_record);
 
-        std::cout << "  [Naive Baseline] Medyan: " << std::fixed << std::setprecision(2)
-                  << naive_median_ms << " ms | " << naive_mb_s << " MB/s | Eslesen: "
+        std::cout << "  [Naive Baseline] Median: " << std::fixed << std::setprecision(2)
+                  << naive_median_ms << " ms | " << naive_mb_s << " MB/s | Matched: "
                   << naive_res.matched_count << "\n";
 
         // 2. Run logscan across thread counts
@@ -374,10 +374,10 @@ std::vector<BenchRecord> run_all_benchmarks(const BenchConfig& cfg) {
             };
             all_records.push_back(logscan_rec);
 
-            std::cout << "  [logscan " << threads << " thread(s)] Medyan: "
+            std::cout << "  [logscan " << threads << " thread(s)] Median: "
                       << std::fixed << std::setprecision(2) << logscan_median_ms
-                      << " ms | " << logscan_mb_s << " MB/s | Hizlanma: "
-                      << speedup << "x | Eslesen: " << logscan_matched << "\n";
+                      << " ms | " << logscan_mb_s << " MB/s | Speedup: "
+                      << speedup << "x | Matched: " << logscan_matched << "\n";
         }
         std::cout << "\n";
     }
@@ -389,8 +389,8 @@ std::vector<BenchRecord> run_all_benchmarks(const BenchConfig& cfg) {
 // Markdown Table Output Generator
 // ============================================================================
 void print_markdown_table(const std::vector<BenchRecord>& records) {
-    std::cout << "### Logscan Benchmark Sonuclari\n\n";
-    std::cout << "| Senaryo | Yontem / Iplik | Medyan Sure (ms) | Veri Hizi (MB/s) | Tepe RSS (MB) | Hizlanma | Eslesen Satir |\n";
+    std::cout << "### Logscan Benchmark Results\n\n";
+    std::cout << "| Scenario | Method / Threads | Median Time (ms) | Throughput (MB/s) | Peak RSS (MB) | Speedup | Matched Lines |\n";
     std::cout << "| :--- | :--- | :---: | :---: | :---: | :---: | :---: |\n";
 
     for (const auto& r : records) {
@@ -426,7 +426,7 @@ void print_markdown_table(const std::vector<BenchRecord>& records) {
 void write_csv_results(const std::string& path, const std::vector<BenchRecord>& records) {
     std::ofstream csv(path);
     if (!csv.is_open()) {
-        std::cerr << "Uyari: CSV ciktisi acilamadi: " << path << "\n";
+        std::cerr << "Warning: Could not open CSV file: " << path << "\n";
         return;
     }
 
@@ -441,16 +441,16 @@ void write_csv_results(const std::string& path, const std::vector<BenchRecord>& 
             << std::fixed << std::setprecision(2) << r.speedup << ","
             << r.matched_lines << "\n";
     }
-    std::cout << "[Benchmark] Sonuclar CSV olarak kaydedildi -> " << path << "\n";
+    std::cout << "[Benchmark] Results saved to CSV -> " << path << "\n";
 }
 
 void print_usage() {
-    std::cout << "Kullanim: logscan_bench [dosya_yolu] [secenekler]\n\n"
-              << "Secenekler:\n"
-              << "  --csv <dosya>        CSV formatinda sonuc dosyasi (varsayilan: benchmark_results.csv)\n"
-              << "  --reps <n>           Her test icin tekrar sayisi (varsayilan: 5)\n"
-              << "  --size-mb <n>        Dosya yoksa uretilecek boyut (varsayilan: 100)\n"
-              << "  -h, --help           Bu yardim iletisini gosterir\n";
+    std::cout << "Usage: logscan_bench [file_path] [options]\n\n"
+              << "Options:\n"
+              << "  --csv <file>         CSV results output path (default: benchmark_results.csv)\n"
+              << "  --reps <n>           Repetition count per configuration (default: 5)\n"
+              << "  --size-mb <n>        File size in MB if generation needed (default: 100)\n"
+              << "  -h, --help           Show this help message\n";
 }
 
 } // namespace
@@ -475,7 +475,7 @@ int main(int argc, char* argv[]) {
         } else if (!arg.empty() && arg[0] != '-') {
             config.log_file = std::string(arg);
         } else {
-            std::cerr << "Bilinmeyen arguman: " << arg << "\n";
+            std::cerr << "Error: Unknown argument: " << arg << "\n";
             print_usage();
             return 1;
         }
@@ -486,7 +486,7 @@ int main(int argc, char* argv[]) {
         print_markdown_table(records);
         write_csv_results(config.csv_output, records);
     } catch (const std::exception& ex) {
-        std::cerr << "Benchmark Hatasi: " << ex.what() << "\n";
+        std::cerr << "Benchmark Error: " << ex.what() << "\n";
         return 1;
     }
 

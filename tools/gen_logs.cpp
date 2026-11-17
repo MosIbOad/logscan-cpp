@@ -70,14 +70,14 @@ constexpr const char* const ERROR_MSGS[] = {
 constexpr size_t ERROR_COUNT = sizeof(ERROR_MSGS) / sizeof(ERROR_MSGS[0]);
 
 void print_usage() {
-    std::cout << "Kullanım: gen_logs <dosya_yolu> <boyut_mb> [--seed <n>]\n"
-              << "   veya: gen_logs --output <dosya> --size-mb <n> [--seed <n>]\n\n"
-              << "Seçenekler:\n"
-              << "  -o, --output <dosya>   Üretilecek dosya yolu (varsayılan: sample.log)\n"
-              << "  -s, --size-mb <n>      Üretilecek dosya boyutu (MB cinsinden)\n"
-              << "  --size-gb <n>          Üretilecek dosya boyutu (GB cinsinden)\n"
-              << "  --seed <n>             Tekrarlanabilirlik için rastgele sayı tohumu (varsayılan: 42)\n"
-              << "  -h, --help             Bu yardım iletisini gösterir\n";
+    std::cout << "Usage: gen_logs <file_path> <size_mb> [--seed <n>]\n"
+              << "   or: gen_logs --output <file> --size-mb <n> [--seed <n>]\n\n"
+              << "Options:\n"
+              << "  -o, --output <file>    Output log file path (default: sample.log)\n"
+              << "  -s, --size-mb <n>      Output file size in MB\n"
+              << "  --size-gb <n>          Output file size in GB\n"
+              << "  --seed <n>             Random seed for reproducibility (default: 42)\n"
+              << "  -h, --help             Show this help message\n";
 }
 
 bool parse_args(int argc, char* argv[], Config& config) {
@@ -106,7 +106,7 @@ bool parse_args(int argc, char* argv[], Config& config) {
                 config.size_bytes = static_cast<size_t>(std::stoull(std::string(arg))) * 1024 * 1024;
             }
         } else {
-            std::cerr << "Hata: Bilinmeyen argüman: " << arg << "\n";
+            std::cerr << "Error: Unknown argument: " << arg << "\n";
             return false;
         }
     }
@@ -124,7 +124,7 @@ int main(int argc, char* argv[]) {
 
     FILE* out = std::fopen(config.output_path.c_str(), "wb");
     if (!out) {
-        std::perror("Dosya oluşturulamadı");
+        std::perror("Failed to create output file");
         return 1;
     }
 
@@ -206,6 +206,6 @@ int main(int argc, char* argv[]) {
     std::fclose(out);
 
     std::cout << "[gen_logs] " << (bytes_written / (1024 * 1024))
-              << " MB sentetik log basariyla olusturuldu -> " << config.output_path << "\n";
+              << " MB synthetic log successfully generated -> " << config.output_path << "\n";
     return 0;
 }

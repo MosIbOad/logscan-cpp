@@ -36,21 +36,21 @@ struct CliArgs {
 };
 
 void print_usage() {
-    std::cout << "logscan v" << logscan::version() << " — Yüksek Başarımlı Log Filtreleme ve Analiz Aracı\n\n"
-              << "Kullanım:\n"
-              << "  logscan <dosya> [seçenekler]\n\n"
-              << "Seçenekler:\n"
-              << "  --contains <metin>       Alt dize filtresi (birden fazla kullanılabilir)\n"
-              << "  --regex <desen>          Regex filtresi\n"
-              << "  --level <seviye>         Minimum log seviyesi (TRACE, DEBUG, INFO, WARN, ERROR, FATAL)\n"
-              << "  --from <zaman>           Başlangıç zamanı (YYYY-MM-DD HH:MM:SS veya YYYY-MM-DDTHH:MM:SS)\n"
-              << "  --to <zaman>             Bitiş zamanı (YYYY-MM-DD HH:MM:SS veya YYYY-MM-DDTHH:MM:SS)\n"
-              << "  --threads <n>            Thread sayısı (varsayılan: donanım çekirdek sayısı)\n"
-              << "  --stats                  Satırları yazdırma, sadece analiz istatistiklerini göster\n"
-              << "  --top <n>                En sık geçen n mesajı göster (--stats ile birlikte)\n"
-              << "  --count                  Sadece eşleşen satır sayısını yaz\n"
-              << "  --help, -h               Bu yardım iletisini gösterir\n"
-              << "  --version, -v            Sürüm bilgisini gösterir\n";
+    std::cout << "logscan v" << logscan::version() << " — High-Performance Log File Scanner and Analyzer\n\n"
+              << "Usage:\n"
+              << "  logscan <file> [options]\n\n"
+              << "Options:\n"
+              << "  --contains <text>        Substring filter (can be specified multiple times)\n"
+              << "  --regex <pattern>        Regular expression filter\n"
+              << "  --level <severity>       Minimum log level (TRACE, DEBUG, INFO, WARN, ERROR, FATAL)\n"
+              << "  --from <time>            Start timestamp (YYYY-MM-DD HH:MM:SS or YYYY-MM-DDTHH:MM:SS)\n"
+              << "  --to <time>              End timestamp (YYYY-MM-DD HH:MM:SS or YYYY-MM-DDTHH:MM:SS)\n"
+              << "  --threads <n>            Number of worker threads (default: hardware concurrency)\n"
+              << "  --stats                  Do not print lines; show statistical summary only\n"
+              << "  --top <n>                Show N most frequent messages (used with --stats)\n"
+              << "  --count                  Print only the count of matched lines\n"
+              << "  --help, -h               Show this help message\n"
+              << "  --version, -v            Show version information\n";
 }
 
 bool parse_arguments(int argc, char* argv[], CliArgs& args) {
@@ -71,7 +71,7 @@ bool parse_arguments(int argc, char* argv[], CliArgs& args) {
             args.count_only = true;
         } else if (arg == "--contains") {
             if (++i >= argc) {
-                std::cerr << "Hata: --contains için aranacak metin belirtilmedi.\n";
+                std::cerr << "Error: Missing search text for --contains.\n";
                 return false;
             }
             args.contains_filters.emplace_back(argv[i]);
@@ -79,7 +79,7 @@ bool parse_arguments(int argc, char* argv[], CliArgs& args) {
             args.contains_filters.emplace_back(arg.substr(11));
         } else if (arg == "--regex") {
             if (++i >= argc) {
-                std::cerr << "Hata: --regex için desen belirtilmedi.\n";
+                std::cerr << "Error: Missing regex pattern for --regex.\n";
                 return false;
             }
             args.regex_filter = argv[i];
@@ -87,7 +87,7 @@ bool parse_arguments(int argc, char* argv[], CliArgs& args) {
             args.regex_filter = std::string(arg.substr(8));
         } else if (arg == "--level") {
             if (++i >= argc) {
-                std::cerr << "Hata: --level için log seviyesi belirtilmedi.\n";
+                std::cerr << "Error: Missing log level for --level.\n";
                 return false;
             }
             args.level_filter = argv[i];
@@ -95,7 +95,7 @@ bool parse_arguments(int argc, char* argv[], CliArgs& args) {
             args.level_filter = std::string(arg.substr(8));
         } else if (arg == "--from") {
             if (++i >= argc) {
-                std::cerr << "Hata: --from için zaman damgası belirtilmedi.\n";
+                std::cerr << "Error: Missing timestamp for --from.\n";
                 return false;
             }
             args.from_time = argv[i];
@@ -103,7 +103,7 @@ bool parse_arguments(int argc, char* argv[], CliArgs& args) {
             args.from_time = std::string(arg.substr(7));
         } else if (arg == "--to") {
             if (++i >= argc) {
-                std::cerr << "Hata: --to için zaman damgası belirtilmedi.\n";
+                std::cerr << "Error: Missing timestamp for --to.\n";
                 return false;
             }
             args.to_time = argv[i];
@@ -111,7 +111,7 @@ bool parse_arguments(int argc, char* argv[], CliArgs& args) {
             args.to_time = std::string(arg.substr(5));
         } else if (arg == "--threads") {
             if (++i >= argc) {
-                std::cerr << "Hata: --threads için sayı belirtilmedi.\n";
+                std::cerr << "Error: Missing number for --threads.\n";
                 return false;
             }
             try {
@@ -121,12 +121,12 @@ bool parse_arguments(int argc, char* argv[], CliArgs& args) {
                 }
                 args.threads = static_cast<size_t>(t);
             } catch (...) {
-                std::cerr << "Hata: --threads pozitif bir tamsayı olmalıdır: " << argv[i] << "\n";
+                std::cerr << "Error: --threads must be a positive integer: " << argv[i] << "\n";
                 return false;
             }
         } else if (arg == "--top") {
             if (++i >= argc) {
-                std::cerr << "Hata: --top için mesaj sayısı belirtilmedi.\n";
+                std::cerr << "Error: Missing message count for --top.\n";
                 return false;
             }
             try {
@@ -137,24 +137,24 @@ bool parse_arguments(int argc, char* argv[], CliArgs& args) {
                 args.top_n = static_cast<size_t>(n);
                 args.stats = true; // --top automatically implies stats mode
             } catch (...) {
-                std::cerr << "Hata: --top pozitif bir tamsayı olmalıdır: " << argv[i] << "\n";
+                std::cerr << "Error: --top must be a positive integer: " << argv[i] << "\n";
                 return false;
             }
         } else if (!arg.empty() && arg[0] == '-') {
-            std::cerr << "Hata: Tanınmayan seçenek: " << arg << "\n";
+            std::cerr << "Error: Unrecognized option: " << arg << "\n";
             return false;
         } else {
             if (args.file_path.empty()) {
                 args.file_path = std::string(arg);
             } else {
-                std::cerr << "Hata: Birden fazla giriş dosyası belirtilemez: " << arg << "\n";
+                std::cerr << "Error: Multiple input files are not supported: " << arg << "\n";
                 return false;
             }
         }
     }
 
     if (args.file_path.empty()) {
-        std::cerr << "Hata: Log dosyası belirtilmedi.\n";
+        std::cerr << "Error: No log file specified.\n";
         return false;
     }
 
@@ -163,9 +163,9 @@ bool parse_arguments(int argc, char* argv[], CliArgs& args) {
 
 void print_stats_report(const logscan::RunResult& result, size_t top_n) {
     std::cout << "--------------------------------------------------\n"
-              << "[logscan İstatistik Özeti]\n"
-              << "Toplam Satır     : " << result.total_lines << "\n"
-              << "Eşleşen Satır    : " << result.matched_count;
+              << "[logscan Statistics Summary]\n"
+              << "Total Lines      : " << result.total_lines << "\n"
+              << "Matched Lines    : " << result.matched_count;
 
     if (result.total_lines > 0) {
         const double pct = (static_cast<double>(result.matched_count) * 100.0) / static_cast<double>(result.total_lines);
@@ -174,8 +174,8 @@ void print_stats_report(const logscan::RunResult& result, size_t top_n) {
         std::cout << " (0.00%)\n";
     }
 
-    std::cout << "Ayrıştırılamayan : " << result.unparsed_lines << "\n\n"
-              << "Log Seviyesi Dağılımı (Tüm Dosya):\n";
+    std::cout << "Unparsed Lines   : " << result.unparsed_lines << "\n\n"
+              << "Log Level Breakdown (Whole File):\n";
 
     for (size_t i = 0; i < static_cast<size_t>(logscan::Level::COUNT); ++i) {
         const auto lvl = static_cast<logscan::Level>(i);
@@ -203,9 +203,9 @@ void print_stats_report(const logscan::RunResult& result, size_t top_n) {
         });
 
         const size_t show_count = std::min(top_n, sorted_msgs.size());
-        std::cout << "\nEn Sık Karşılaşılan " << show_count << " Mesaj:\n";
+        std::cout << "\nTop " << show_count << " Most Frequent Messages:\n";
         for (size_t i = 0; i < show_count; ++i) {
-            std::cout << "  " << (i + 1) << ". [" << sorted_msgs[i].second << " kez] "
+            std::cout << "  " << (i + 1) << ". [" << sorted_msgs[i].second << " times] "
                       << sorted_msgs[i].first << "\n";
         }
     }
@@ -251,7 +251,7 @@ int main(int argc, char* argv[]) {
         try {
             filter_chain.emplace_filter<logscan::RegexFilter>(*args.regex_filter);
         } catch (const std::regex_error& err) {
-            std::cerr << "Hata: Geçersiz regex ifadesi: " << *args.regex_filter << " (" << err.what() << ")\n";
+            std::cerr << "Error: Invalid regular expression: " << *args.regex_filter << " (" << err.what() << ")\n";
             return 1;
         }
     }
@@ -259,8 +259,8 @@ int main(int argc, char* argv[]) {
     if (args.level_filter.has_value()) {
         const auto lvl = logscan::parse_level(*args.level_filter);
         if (!lvl.has_value()) {
-            std::cerr << "Hata: Bilinmeyen log seviyesi: " << *args.level_filter << "\n"
-                      << "Geçerli seviyeler: TRACE, DEBUG, INFO, WARN, ERROR, FATAL\n";
+            std::cerr << "Error: Unknown log level: " << *args.level_filter << "\n"
+                      << "Valid levels: TRACE, DEBUG, INFO, WARN, ERROR, FATAL\n";
             return 1;
         }
         filter_chain.emplace_filter<logscan::LevelFilter>(*lvl);
@@ -269,13 +269,13 @@ int main(int argc, char* argv[]) {
     if (args.from_time.has_value() || args.to_time.has_value()) {
         auto time_filter = logscan::TimeRangeFilter::from_strings(args.from_time, args.to_time);
         if (args.from_time.has_value() && !time_filter.start_epoch().has_value()) {
-            std::cerr << "Hata: Geçersiz başlangıç zamanı formatı: " << *args.from_time << "\n"
-                      << "Beklenen format: YYYY-MM-DD HH:MM:SS\n";
+            std::cerr << "Error: Invalid start time format: " << *args.from_time << "\n"
+                      << "Expected format: YYYY-MM-DD HH:MM:SS\n";
             return 1;
         }
         if (args.to_time.has_value() && !time_filter.end_epoch().has_value()) {
-            std::cerr << "Hata: Geçersiz bitiş zamanı formatı: " << *args.to_time << "\n"
-                      << "Beklenen format: YYYY-MM-DD HH:MM:SS\n";
+            std::cerr << "Error: Invalid end time format: " << *args.to_time << "\n"
+                      << "Expected format: YYYY-MM-DD HH:MM:SS\n";
             return 1;
         }
         filter_chain.add_filter(std::make_unique<logscan::TimeRangeFilter>(time_filter));
@@ -286,7 +286,7 @@ int main(int argc, char* argv[]) {
     try {
         mapped_file = std::make_unique<logscan::MappedFile>(args.file_path);
     } catch (const std::exception& err) {
-        std::cerr << "Hata: Dosya açılamadı: " << err.what() << "\n";
+        std::cerr << "Error: Failed to open file: " << err.what() << "\n";
         return 1;
     }
 
@@ -309,7 +309,7 @@ int main(int argc, char* argv[]) {
     try {
         result = runner.run(*mapped_file, filter_chain, options);
     } catch (const std::exception& err) {
-        std::cerr << "Hata: Tarama sırasında istisna oluştu: " << err.what() << "\n";
+        std::cerr << "Error: Exception occurred during scanning: " << err.what() << "\n";
         return 1;
     }
 
@@ -336,7 +336,7 @@ int main(int argc, char* argv[]) {
 
     std::fprintf(
         stderr,
-        "[logscan] %.2f MB işlendi | Süre: %.2f ms (%.2f MB/s) | Thread: %zu\n",
+        "[logscan] %.2f MB processed | Time: %.2f ms (%.2f MB/s) | Threads: %zu\n",
         mb_processed,
         elapsed_seconds * 1000.0,
         throughput_mb_s,

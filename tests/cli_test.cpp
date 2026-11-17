@@ -78,7 +78,7 @@ TEST(CliEndToEndTest, HelpAndVersionOptions) {
     // 1. --help
     const auto help_res = run_cmd("\"" + exe + "\" --help");
     EXPECT_EQ(help_res.exit_code, 0);
-    EXPECT_NE(help_res.output.find("Kullanım:"), std::string::npos);
+    EXPECT_NE(help_res.output.find("Usage:"), std::string::npos);
 
     // 2. --version
     const auto ver_res = run_cmd("\"" + exe + "\" --version");
@@ -140,13 +140,13 @@ TEST(CliEndToEndTest, StatsAndTopNOption) {
     EXPECT_EQ(res.exit_code, 0);
 
     // Summary header must be present
-    EXPECT_NE(res.output.find("[logscan İstatistik Özeti]"), std::string::npos);
-    EXPECT_NE(res.output.find("Toplam Satır     : 6"), std::string::npos);
+    EXPECT_NE(res.output.find("[logscan Statistics Summary]"), std::string::npos);
+    EXPECT_NE(res.output.find("Total Lines      : 6"), std::string::npos);
 
     // Top-N output
-    EXPECT_NE(res.output.find("En Sık Karşılaşılan 2 Mesaj:"), std::string::npos);
-    EXPECT_NE(res.output.find("[3 kez] Connection timeout"), std::string::npos);
-    EXPECT_NE(res.output.find("[2 kez] Low space"), std::string::npos);
+    EXPECT_NE(res.output.find("Top 2 Most Frequent Messages:"), std::string::npos);
+    EXPECT_NE(res.output.find("[3 times] Connection timeout"), std::string::npos);
+    EXPECT_NE(res.output.find("[2 times] Low space"), std::string::npos);
 }
 
 TEST(CliEndToEndTest, MissingFileReturnsNonZero) {
@@ -155,5 +155,5 @@ TEST(CliEndToEndTest, MissingFileReturnsNonZero) {
 
     const auto res = run_cmd("\"" + exe + "\" \"" + missing_path + "\" 2>&1");
     EXPECT_NE(res.exit_code, 0);
-    EXPECT_NE(res.output.find("Hata: Dosya açılamadı"), std::string::npos);
+    EXPECT_NE(res.output.find("Error: Failed to open file"), std::string::npos);
 }
