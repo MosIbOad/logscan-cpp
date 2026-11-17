@@ -1,6 +1,9 @@
 add_executable(logscan_tests
     test_placeholder.cpp
     mapped_file_test.cpp
+    log_line_test.cpp
+    filter_test.cpp
+    chunk_processor_test.cpp
 )
 
 target_link_libraries(logscan_tests

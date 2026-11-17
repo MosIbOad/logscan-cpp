@@ -1,5 +1,9 @@
 add_library(logscan_core STATIC
     mapped_file.cpp
+    log_line.cpp
+    time_utils.cpp
+    filter.cpp
+    chunk_processor.cpp
 )
 
 target_include_directories(logscan_core
