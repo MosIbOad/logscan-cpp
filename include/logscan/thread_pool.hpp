@@ -38,7 +38,7 @@ public:
 
         std::future<ReturnType> fut = task->get_future();
         {
-            std::lock_guard<std::mutex> lock(mutex_);
+            std::scoped_lock lock(mutex_);
             if (stopping_) {
                 throw std::runtime_error("Cannot submit task to stopped ThreadPool");
             }
@@ -55,12 +55,12 @@ public:
     }
 
     [[nodiscard]] bool is_stopped() const noexcept {
-        std::lock_guard<std::mutex> lock(mutex_);
+        std::scoped_lock lock(mutex_);
         return stopping_;
     }
 
 private:
-    void worker_loop(std::stop_token stop_token);
+    void worker_loop(const std::stop_token& stop_token);
 
     std::vector<std::jthread> workers_;
     std::queue<std::function<void()>> tasks_;

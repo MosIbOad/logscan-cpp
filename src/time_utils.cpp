@@ -12,10 +12,10 @@ namespace {
 [[nodiscard]] constexpr int64_t days_from_civil(int y, unsigned m, unsigned d) noexcept {
     y -= m <= 2;
     const int64_t era = (y >= 0 ? y : y - 399) / 400;
-    const auto yoe = static_cast<unsigned>(y - era * 400);
-    const unsigned doy = (153 * (m > 2 ? m - 3 : m + 9) + 2) / 5 + d - 1;
-    const unsigned doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
-    return era * 146097 + static_cast<int64_t>(doe) - 719468;
+    const auto yoe = static_cast<unsigned>(y - (era * 400));
+    const unsigned doy = (((153 * (m > 2 ? m - 3 : m + 9)) + 2) / 5) + d - 1;
+    const unsigned doe = (yoe * 365) + (yoe / 4) - (yoe / 100) + doy;
+    return (era * 146097) + static_cast<int64_t>(doe) - 719468;
 }
 
 } // namespace
@@ -39,13 +39,13 @@ std::optional<int64_t> parse_iso8601_timestamp(std::string_view sv) noexcept {
         return std::nullopt;
     }
 
-    const int year = (sv[0] - '0') * 1000 + (sv[1] - '0') * 100 + (sv[2] - '0') * 10 + (sv[3] - '0');
-    const auto month = static_cast<unsigned>((sv[5] - '0') * 10 + (sv[6] - '0'));
-    const auto day = static_cast<unsigned>((sv[8] - '0') * 10 + (sv[9] - '0'));
+    const int year = ((sv[0] - '0') * 1000) + ((sv[1] - '0') * 100) + ((sv[2] - '0') * 10) + (sv[3] - '0');
+    const auto month = static_cast<unsigned>(((sv[5] - '0') * 10) + (sv[6] - '0'));
+    const auto day = static_cast<unsigned>(((sv[8] - '0') * 10) + (sv[9] - '0'));
 
-    const int hour = (sv[11] - '0') * 10 + (sv[12] - '0');
-    const int minute = (sv[14] - '0') * 10 + (sv[15] - '0');
-    const int second = (sv[17] - '0') * 10 + (sv[18] - '0');
+    const int hour = ((sv[11] - '0') * 10) + (sv[12] - '0');
+    const int minute = ((sv[14] - '0') * 10) + (sv[15] - '0');
+    const int second = ((sv[17] - '0') * 10) + (sv[18] - '0');
 
     if (month < 1 || month > 12 || day < 1 || day > 31 ||
         hour < 0 || hour > 23 || minute < 0 || minute > 59 || second < 0 || second > 60) {
@@ -53,9 +53,9 @@ std::optional<int64_t> parse_iso8601_timestamp(std::string_view sv) noexcept {
     }
 
     const int64_t days = days_from_civil(year, month, day);
-    const int64_t total_seconds = days * 86400 +
-                                  static_cast<int64_t>(hour) * 3600 +
-                                  static_cast<int64_t>(minute) * 60 +
+    const int64_t total_seconds = (days * 86400) +
+                                  (static_cast<int64_t>(hour) * 3600) +
+                                  (static_cast<int64_t>(minute) * 60) +
                                   static_cast<int64_t>(second);
 
     return total_seconds;

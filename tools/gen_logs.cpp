@@ -1,4 +1,4 @@
-#if defined(_WIN32)
+#ifdef _WIN32
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
@@ -22,7 +22,7 @@ struct Config {
     uint64_t seed{42};
 };
 
-const char* RESOURCES[] = {
+constexpr const char* const RESOURCES[] = {
     "Resource:auth",
     "Resource:database",
     "Resource:api_gw",
@@ -33,7 +33,7 @@ const char* RESOURCES[] = {
 };
 constexpr size_t RESOURCE_COUNT = sizeof(RESOURCES) / sizeof(RESOURCES[0]);
 
-const char* INFO_MSGS[] = {
+constexpr const char* const INFO_MSGS[] = {
     "User session authenticated successfully client_id=",
     "HTTP request GET /api/v2/items completed status=200 duration_ms=",
     "Periodic system health check passed active_nodes=16",
@@ -42,7 +42,7 @@ const char* INFO_MSGS[] = {
 };
 constexpr size_t INFO_COUNT = sizeof(INFO_MSGS) / sizeof(INFO_MSGS[0]);
 
-const char* DEBUG_MSGS[] = {
+constexpr const char* const DEBUG_MSGS[] = {
     "Query execution plan compiled plan_hash=",
     "Buffer allocation succeeded size_kb=64 block_id=",
     "TCP keep-alive heartbeat ping acknowledged",
@@ -51,7 +51,7 @@ const char* DEBUG_MSGS[] = {
 };
 constexpr size_t DEBUG_COUNT = sizeof(DEBUG_MSGS) / sizeof(DEBUG_MSGS[0]);
 
-const char* WARN_MSGS[] = {
+constexpr const char* const WARN_MSGS[] = {
     "High memory pressure detected heap_usage_pct=",
     "Slow database query execution_time_ms=",
     "Connection retry attempt 2 for host=shard-",
@@ -60,7 +60,7 @@ const char* WARN_MSGS[] = {
 };
 constexpr size_t WARN_COUNT = sizeof(WARN_MSGS) / sizeof(WARN_MSGS[0]);
 
-const char* ERROR_MSGS[] = {
+constexpr const char* const ERROR_MSGS[] = {
     "Database connection timeout on shard-",
     "Failed to authenticate token: expired session_token=",
     "Connection reset by peer remote_endpoint=10.0.",

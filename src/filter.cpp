@@ -16,7 +16,7 @@ TimeRangeFilter TimeRangeFilter::from_strings(
         end_epoch = parse_iso8601_timestamp(*end_str);
     }
 
-    return TimeRangeFilter(start_epoch, end_epoch);
+    return {start_epoch, end_epoch};
 }
 
 } // namespace logscan

@@ -9,7 +9,7 @@ ThreadPool::ThreadPool(size_t thread_count) {
 
     workers_.reserve(thread_count);
     for (size_t i = 0; i < thread_count; ++i) {
-        workers_.emplace_back([this](std::stop_token st) {
+        workers_.emplace_back([this](const std::stop_token& st) {
             worker_loop(st);
         });
     }
@@ -21,7 +21,7 @@ ThreadPool::~ThreadPool() {
 
 void ThreadPool::shutdown() {
     {
-        std::lock_guard<std::mutex> lock(mutex_);
+        std::scoped_lock lock(mutex_);
         if (stopping_) {
             return;
         }
@@ -38,7 +38,7 @@ void ThreadPool::shutdown() {
     }
 }
 
-void ThreadPool::worker_loop(std::stop_token stop_token) {
+void ThreadPool::worker_loop(const std::stop_token& stop_token) {
     while (true) {
         std::function<void()> task;
         {

@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <string>
 
-#if defined(_WIN32)
+#ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
@@ -24,7 +24,7 @@ namespace logscan {
 
 namespace {
 
-#if defined(_WIN32)
+#ifdef _WIN32
 std::string format_windows_error(const std::string& context, DWORD error_code) {
     LPWSTR message_buffer = nullptr;
     const DWORD size = FormatMessageW(
@@ -85,7 +85,7 @@ std::string format_posix_error(const std::string& context, int err) {
 } // namespace
 
 MappedFile::MappedFile(const std::filesystem::path& path) {
-#if defined(_WIN32)
+#ifdef _WIN32
     const std::wstring wide_path = path.wstring();
     HANDLE file_handle = CreateFileW(
         wide_path.c_str(),
@@ -210,7 +210,7 @@ MappedFile::~MappedFile() noexcept {
 MappedFile::MappedFile(MappedFile&& other) noexcept
     : data_(other.data_),
       size_(other.size_)
-#if defined(_WIN32)
+#ifdef _WIN32
     , file_handle_(other.file_handle_),
       mapping_handle_(other.mapping_handle_)
 #else
@@ -219,7 +219,7 @@ MappedFile::MappedFile(MappedFile&& other) noexcept
 {
     other.data_ = nullptr;
     other.size_ = 0;
-#if defined(_WIN32)
+#ifdef _WIN32
     other.file_handle_ = nullptr;
     other.mapping_handle_ = nullptr;
 #else
@@ -233,7 +233,7 @@ MappedFile& MappedFile::operator=(MappedFile&& other) noexcept {
 
         data_ = other.data_;
         size_ = other.size_;
-#if defined(_WIN32)
+#ifdef _WIN32
         file_handle_ = other.file_handle_;
         mapping_handle_ = other.mapping_handle_;
         other.file_handle_ = nullptr;
@@ -249,7 +249,7 @@ MappedFile& MappedFile::operator=(MappedFile&& other) noexcept {
 }
 
 void MappedFile::cleanup() noexcept {
-#if defined(_WIN32)
+#ifdef _WIN32
     if (data_ != nullptr) {
         UnmapViewOfFile(data_);
         data_ = nullptr;

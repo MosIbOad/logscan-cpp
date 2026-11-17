@@ -1,0 +1,150 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ===========================================================================
+  # Matrix Build & Test: Linux (GCC/Clang), Windows (MSVC), macOS (AppleClang)
+  # ===========================================================================
+  build-and-test:
+    name: Build & Test (${{ matrix.os }} - ${{ matrix.compiler }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            compiler: gcc-13
+            cxx: g++-13
+            cc: gcc-13
+            generator: Ninja
+          - os: ubuntu-latest
+            compiler: clang-18
+            cxx: clang++-18
+            cc: clang-18
+            generator: Ninja
+          - os: windows-latest
+            compiler: msvc-2022
+            cxx: cl
+            cc: cl
+            generator: "Visual Studio 17 2022"
+          - os: macos-latest
+            compiler: apple-clang
+            cxx: clang++
+            cc: clang
+            generator: Ninja
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build
+          if [ "${{ matrix.compiler }}" = "gcc-13" ]; then
+            sudo apt-get install -y gcc-13 g++-13
+          fi
+          if [ "${{ matrix.compiler }}" = "clang-18" ]; then
+            sudo apt-get install -y clang-18
+          fi
+
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install ninja
+
+      - name: Setup MSVC developer environment (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Configure CMake
+        run: |
+          cmake -B build -G "${{ matrix.generator }}" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DLOGSCAN_BUILD_TESTS=ON \
+            -DLOGSCAN_BUILD_BENCH=ON
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: Run Tests (ctest)
+        run: ctest --test-dir build -C Release --output-on-failure --parallel
+
+  # ===========================================================================
+  # Sanitizer: AddressSanitizer (ASan) + UndefinedBehaviorSanitizer (UBSan)
+  # ===========================================================================
+  asan-ubsan:
+    name: Sanitizers (ASan + UBSan)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Clang & Ninja
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-18 ninja-build
+
+      - name: Configure CMake with ASan & UBSan
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=clang-18 \
+            -DCMAKE_CXX_COMPILER=clang++-18 \
+            -DLOGSCAN_BUILD_TESTS=ON \
+            -DLOGSCAN_ENABLE_ASAN=ON
+
+      - name: Build with ASan
+        run: cmake --build build --parallel
+
+      - name: Run Tests under ASan + UBSan
+        run: ctest --test-dir build --output-on-failure
+        env:
+          ASAN_OPTIONS: "detect_leaks=1:check_initialization_order=1:strict_init_order=1"
+          UBSAN_OPTIONS: "print_stacktrace=1:halt_on_error=1"
+
+  # ===========================================================================
+  # Sanitizer: ThreadSanitizer (TSan)
+  # ===========================================================================
+  tsan:
+    name: Sanitizers (TSan)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Clang & Ninja
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-18 ninja-build
+
+      - name: Configure CMake with TSan
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_C_COMPILER=clang-18 \
+            -DCMAKE_CXX_COMPILER=clang++-18 \
+            -DLOGSCAN_BUILD_TESTS=ON \
+            -DLOGSCAN_ENABLE_TSAN=ON
+
+      - name: Build with TSan
+        run: cmake --build build --parallel
+
+      - name: Run Tests under TSan
+        run: ctest --test-dir build --output-on-failure
+        env:
+          TSAN_OPTIONS: "second_deadlock_stack=1"

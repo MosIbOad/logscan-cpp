@@ -75,7 +75,7 @@ bool parse_arguments(int argc, char* argv[], CliArgs& args) {
                 return false;
             }
             args.contains_filters.emplace_back(argv[i]);
-        } else if (arg.rfind("--contains=", 0) == 0) {
+        } else if (arg.starts_with("--contains=")) {
             args.contains_filters.emplace_back(arg.substr(11));
         } else if (arg == "--regex") {
             if (++i >= argc) {
@@ -83,7 +83,7 @@ bool parse_arguments(int argc, char* argv[], CliArgs& args) {
                 return false;
             }
             args.regex_filter = argv[i];
-        } else if (arg.rfind("--regex=", 0) == 0) {
+        } else if (arg.starts_with("--regex=")) {
             args.regex_filter = std::string(arg.substr(8));
         } else if (arg == "--level") {
             if (++i >= argc) {
@@ -91,7 +91,7 @@ bool parse_arguments(int argc, char* argv[], CliArgs& args) {
                 return false;
             }
             args.level_filter = argv[i];
-        } else if (arg.rfind("--level=", 0) == 0) {
+        } else if (arg.starts_with("--level=")) {
             args.level_filter = std::string(arg.substr(8));
         } else if (arg == "--from") {
             if (++i >= argc) {
@@ -99,7 +99,7 @@ bool parse_arguments(int argc, char* argv[], CliArgs& args) {
                 return false;
             }
             args.from_time = argv[i];
-        } else if (arg.rfind("--from=", 0) == 0) {
+        } else if (arg.starts_with("--from=")) {
             args.from_time = std::string(arg.substr(7));
         } else if (arg == "--to") {
             if (++i >= argc) {
@@ -107,7 +107,7 @@ bool parse_arguments(int argc, char* argv[], CliArgs& args) {
                 return false;
             }
             args.to_time = argv[i];
-        } else if (arg.rfind("--to=", 0) == 0) {
+        } else if (arg.starts_with("--to=")) {
             args.to_time = std::string(arg.substr(5));
         } else if (arg == "--threads") {
             if (++i >= argc) {
@@ -195,7 +195,7 @@ void print_stats_report(const logscan::RunResult& result, size_t top_n) {
             result.message_counts.end()
         );
 
-        std::sort(sorted_msgs.begin(), sorted_msgs.end(), [](const auto& a, const auto& b) {
+        std::ranges::sort(sorted_msgs, [](const auto& a, const auto& b) {
             if (a.second != b.second) {
                 return a.second > b.second;
             }
@@ -299,7 +299,7 @@ int main(int argc, char* argv[]) {
         options.track_messages = true;
     }
 
-    const size_t thread_count = args.threads > 0 ? args.threads : std::max(1u, std::thread::hardware_concurrency());
+    const size_t thread_count = args.threads > 0 ? args.threads : std::max(1U, std::thread::hardware_concurrency());
     logscan::Runner runner(thread_count);
 
     // 4. Run parallel scanning & measure time

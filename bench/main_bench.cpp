@@ -1,4 +1,4 @@
-#if defined(_WIN32)
+#ifdef _WIN32
 #define _CRT_SECURE_NO_WARNINGS
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
@@ -45,7 +45,7 @@ namespace {
 // Platform Memory Tracking (Peak RSS)
 // ============================================================================
 double get_peak_rss_mb() {
-#if defined(_WIN32)
+#ifdef _WIN32
     PROCESS_MEMORY_COUNTERS_EX pmc;
     std::memset(&pmc, 0, sizeof(pmc));
     pmc.cb = sizeof(pmc);
@@ -298,9 +298,9 @@ std::vector<BenchRecord> run_all_benchmarks(const BenchConfig& cfg) {
             naive_peak_rss = (std::max)(naive_peak_rss, get_peak_rss_mb());
         }
 
-        std::sort(naive_times.begin(), naive_times.end());
+        std::ranges::sort(naive_times);
         double naive_median_ms = naive_times[static_cast<size_t>(cfg.repetitions / 2)];
-        double naive_mb_s = (file_size_mb) / (naive_median_ms / 1000.0);
+        double naive_mb_s = file_size_mb / (naive_median_ms / 1000.0);
 
         BenchRecord naive_record{
             sc.name,
@@ -357,9 +357,9 @@ std::vector<BenchRecord> run_all_benchmarks(const BenchConfig& cfg) {
                 logscan_matched = run_res.matched_count;
             }
 
-            std::sort(logscan_times.begin(), logscan_times.end());
+            std::ranges::sort(logscan_times);
             double logscan_median_ms = logscan_times[static_cast<size_t>(cfg.repetitions / 2)];
-            double logscan_mb_s = (file_size_mb) / (logscan_median_ms / 1000.0);
+            double logscan_mb_s = file_size_mb / (logscan_median_ms / 1000.0);
             double speedup = naive_median_ms / logscan_median_ms;
 
             BenchRecord logscan_rec{
