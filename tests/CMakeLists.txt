@@ -7,6 +7,12 @@ add_executable(logscan_tests
     thread_pool_test.cpp
     chunk_splitter_test.cpp
     runner_test.cpp
+    cli_test.cpp
+)
+
+target_compile_definitions(logscan_tests
+    PRIVATE
+        LOGSCAN_CLI_EXE="$<TARGET_FILE:logscan>"
 )
 
 target_link_libraries(logscan_tests

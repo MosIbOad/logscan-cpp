@@ -43,6 +43,9 @@ ChunkResult process_chunk(
             result.matched_count++;
             if (log_line.is_parsed) {
                 result.matched_level_counts[static_cast<size_t>(log_line.level)]++;
+                if (options.track_messages && !log_line.message.empty()) {
+                    result.message_counts[log_line.message]++;
+                }
             }
             if (options.collect_matched_lines) {
                 result.matched_lines.push_back(line);

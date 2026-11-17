@@ -58,6 +58,12 @@ RunResult Runner::run(
                 result.matched_level_counts[l] += chunk_res.matched_level_counts[l];
             }
 
+            if (options.track_messages) {
+                for (const auto& [msg, count] : chunk_res.message_counts) {
+                    result.message_counts[msg] += count;
+                }
+            }
+
             if (options.collect_matched_lines && !chunk_res.matched_lines.empty()) {
                 result.matched_lines.insert(
                     result.matched_lines.end(),
