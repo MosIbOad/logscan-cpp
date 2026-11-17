@@ -39,6 +39,7 @@ if(LOGSCAN_BUILD_TESTS)
     set_property(DIRECTORY PROPERTY TEST_INCLUDE_FILES "${CMAKE_BINARY_DIR}/default_ctest_config.cmake")
 
     include(FetchContent)
+    set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE BOOL "Don't check for updates on already populated dependencies" FORCE)
     FetchContent_Declare(
         googletest
         GIT_REPOSITORY https://github.com/google/googletest.git
