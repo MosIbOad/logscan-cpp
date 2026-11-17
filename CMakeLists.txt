@@ -20,6 +20,16 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # User configuration options
 option(LOGSCAN_BUILD_TESTS "Build tests with GoogleTest" ON)
 option(LOGSCAN_BUILD_BENCH "Build benchmarks" ON)
+option(LOGSCAN_ENABLE_TSAN "Enable ThreadSanitizer instrumentation" OFF)
+
+if(LOGSCAN_ENABLE_TSAN)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+        add_compile_options(-fsanitize=thread -g)
+        add_link_options(-fsanitize=thread)
+    else()
+        message(WARNING "ThreadSanitizer is not supported on compiler: ${CMAKE_CXX_COMPILER_ID}")
+    endif()
+endif()
 
 # Compiler warnings interface target
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")

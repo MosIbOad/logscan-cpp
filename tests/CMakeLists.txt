@@ -4,6 +4,9 @@ add_executable(logscan_tests
     log_line_test.cpp
     filter_test.cpp
     chunk_processor_test.cpp
+    thread_pool_test.cpp
+    chunk_splitter_test.cpp
+    runner_test.cpp
 )
 
 target_link_libraries(logscan_tests

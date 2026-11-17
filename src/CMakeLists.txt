@@ -4,6 +4,9 @@ add_library(logscan_core STATIC
     time_utils.cpp
     filter.cpp
     chunk_processor.cpp
+    thread_pool.cpp
+    chunk_splitter.cpp
+    runner.cpp
 )
 
 target_include_directories(logscan_core
