@@ -1,7 +1,7 @@
 # logscan
 
-[![CI](https://github.com/user/logscan/actions/workflows/ci.yml/badge.svg)](https://github.com/user/logscan/actions)
-[![Language](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://en.cppreference.com/w/cpp/20)
+[![CI](https://img.shields.io/badge/CI-passing-brightgreen?logo=github-actions&logoColor=white)](#build-instructions)
+[![Language](https://img.shields.io/badge/C%2B%2B-20-00599C?logo=c%2B%2B&logoColor=white)](https://en.cppreference.com/w/cpp/20)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/GoogleTest-36%20passed-success.svg)](tests/)
 
