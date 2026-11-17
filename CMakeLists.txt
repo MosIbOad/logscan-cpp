@@ -38,6 +38,9 @@ include(CompilerWarnings)
 # Core library & main executable
 add_subdirectory(src)
 
+# Standalone tools (synthetic log generator, etc.)
+add_subdirectory(tools)
+
 # Testing configuration with GoogleTest via FetchContent
 if(LOGSCAN_BUILD_TESTS)
     enable_testing()

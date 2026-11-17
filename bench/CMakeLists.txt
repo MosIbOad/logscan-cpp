@@ -1,5 +1,5 @@
 add_executable(logscan_bench
-    bench_placeholder.cpp
+    main_bench.cpp
 )
 
 target_link_libraries(logscan_bench
@@ -7,3 +7,10 @@ target_link_libraries(logscan_bench
         logscan_core
         logscan_warnings
 )
+
+if(WIN32)
+    target_link_libraries(logscan_bench
+        PRIVATE
+            psapi
+    )
+endif()
